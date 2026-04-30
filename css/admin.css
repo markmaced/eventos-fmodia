@@ -1,0 +1,34 @@
+.fm-eventos-admin-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.fm-eventos-admin-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-weight: 600;
+}
+
+.fm-eventos-admin-grid input,
+.fm-eventos-admin-grid select,
+.fm-eventos-admin-grid textarea {
+    width: 100%;
+    max-width: 100%;
+}
+
+.fm-eventos-admin-full {
+    grid-column: 1 / -1;
+}
+
+.fm-eventos-admin-help {
+    margin-left: 10px;
+    color: #646970;
+}
+
+@media (max-width: 782px) {
+    .fm-eventos-admin-grid {
+        grid-template-columns: 1fr;
+    }
+}
