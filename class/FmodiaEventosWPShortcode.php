@@ -20,9 +20,9 @@ class FmodiaEventosWPShortcode
             'mes' => current_time('Y-m'),
         ], $atts, 'fmodia_eventos');
 
-        wp_enqueue_style('fmodia-eventos-calendario');
-        wp_enqueue_script('fmodia-eventos-calendario');
-        wp_localize_script('fmodia-eventos-calendario', 'FMODIA_EVENTOS', [
+        FmodiaEventosWPManager::registerFrontendAssets();
+
+        $config = [
             'restUrl' => esc_url_raw(rest_url(FmodiaEventosWPApi::NS)),
             'restNonce' => wp_create_nonce('wp_rest'),
             'defaultMonth' => sanitize_text_field($atts['mes']) ?: current_time('Y-m'),
@@ -33,7 +33,15 @@ class FmodiaEventosWPShortcode
             ],
             'ufs' => FmodiaEventosWPManager::getUfs(),
             'categorias' => self::getCategorias(),
-        ]);
+        ];
+
+        wp_enqueue_style('fmodia-eventos-calendario');
+        wp_enqueue_script('fmodia-eventos-calendario');
+        wp_add_inline_script(
+            'fmodia-eventos-calendario',
+            'window.FMODIA_EVENTOS = ' . wp_json_encode($config) . ';',
+            'before'
+        );
 
         ob_start();
         require FMODIAEVENTOSWP_PLUGIN_DIR . 'shortcodes/calendario.php';

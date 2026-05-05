@@ -33,6 +33,12 @@ class FmodiaEventosWPApi
             'callback' => [__CLASS__, 'getLocalidades'],
             'permission_callback' => '__return_true',
         ]);
+
+        register_rest_route(self::NS, '/filtros', [
+            'methods' => WP_REST_Server::READABLE,
+            'callback' => [__CLASS__, 'getFiltros'],
+            'permission_callback' => '__return_true',
+        ]);
     }
 
     public static function getEventos(WP_REST_Request $request)
@@ -47,9 +53,14 @@ class FmodiaEventosWPApi
         $estado = strtoupper(sanitize_text_field($request->get_param('estado')));
         $cidade = sanitize_text_field($request->get_param('cidade'));
         $categoria = sanitize_title($request->get_param('categoria'));
-        $lat = $request->get_param('lat') !== null ? floatval($request->get_param('lat')) : null;
-        $lng = $request->get_param('lng') !== null ? floatval($request->get_param('lng')) : null;
-        $raio = $request->get_param('raio') !== null ? max(1, floatval($request->get_param('raio'))) : 30;
+        $latParam = $request->get_param('lat');
+        $lngParam = $request->get_param('lng');
+        $hasGeo = is_numeric($latParam) && is_numeric($lngParam);
+        $lat = $hasGeo ? floatval($latParam) : null;
+        $lng = $hasGeo ? floatval($lngParam) : null;
+        $raio = $request->get_param('raio') !== null && is_numeric($request->get_param('raio'))
+            ? min(500, max(1, floatval($request->get_param('raio'))))
+            : 30;
 
         $dateQuery = [
             'relation' => 'OR',
@@ -132,7 +143,7 @@ class FmodiaEventosWPApi
 
         foreach ($query->posts as $post) {
             $event = self::formatEvent($post, false);
-            if ($lat !== null && $lng !== null) {
+            if ($hasGeo) {
                 $distance = self::distanceKm($lat, $lng, floatval($event['lat']), floatval($event['lng']));
                 if ($distance > $raio) {
                     continue;
@@ -145,6 +156,20 @@ class FmodiaEventosWPApi
         wp_reset_postdata();
 
         $response = rest_ensure_response($events);
+        $response->header('Cache-Control', 'max-age=300');
+        return $response;
+    }
+
+    public static function getFiltros()
+    {
+        $localidades = self::getLocalidadesMap();
+        $categorias = self::getCategorias();
+
+        $response = rest_ensure_response([
+            'ufs' => FmodiaEventosWPManager::getUfs(),
+            'localidades' => $localidades,
+            'categorias' => $categorias,
+        ]);
         $response->header('Cache-Control', 'max-age=300');
         return $response;
     }
@@ -178,6 +203,15 @@ class FmodiaEventosWPApi
 
     public static function getLocalidades()
     {
+        $map = self::getLocalidadesMap();
+
+        $response = rest_ensure_response($map);
+        $response->header('Cache-Control', 'max-age=300');
+        return $response;
+    }
+
+    private static function getLocalidadesMap()
+    {
         global $wpdb;
 
         $rows = $wpdb->get_results("
@@ -203,9 +237,31 @@ class FmodiaEventosWPApi
             }
         }
 
-        $response = rest_ensure_response($map);
-        $response->header('Cache-Control', 'max-age=300');
-        return $response;
+        return $map;
+    }
+
+    private static function getCategorias()
+    {
+        $terms = get_terms([
+            'taxonomy' => 'fm_evento_categoria',
+            'hide_empty' => false,
+            'orderby' => 'name',
+            'order' => 'ASC',
+        ]);
+
+        if (is_wp_error($terms)) {
+            return [];
+        }
+
+        return array_map(function ($term) {
+            return [
+                'id' => $term->term_id,
+                'nome' => $term->name,
+                'slug' => $term->slug,
+                'cor' => get_term_meta($term->term_id, 'cor', true) ?: '#1976d2',
+                'count' => (int) $term->count,
+            ];
+        }, $terms);
     }
 
     private static function formatEvent(WP_Post $post, $full)
