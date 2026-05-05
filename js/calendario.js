@@ -36,6 +36,7 @@
             estado: root.querySelector('[data-fm-estado]'),
             cidade: root.querySelector('[data-fm-cidade]'),
             categoria: root.querySelector('[data-fm-categoria]'),
+            clear: root.querySelector('[data-fm-clear]'),
             geo: root.querySelector('[data-fm-geo]'),
             raio: root.querySelector('[data-fm-raio]'),
             raioLabel: root.querySelector('[data-fm-raio-label]'),
@@ -239,7 +240,7 @@
                 return state.eventos.length + ' evento' + (state.eventos.length > 1 ? 's' : '') + ' em ate ' + state.filters.raio + ' km da sua localizacao.';
             }
 
-            return '';
+            return state.eventos.length + ' evento' + (state.eventos.length > 1 ? 's' : '') + ' em ' + formatMonth(state.currentMonth) + '.';
         }
 
         function hasGeo() {
@@ -518,6 +519,7 @@
             }
             if (event.target.closest('[data-fm-close]')) closeModal();
             if (event.target.closest('[data-fm-geo]')) requestGeo();
+            if (event.target.closest('[data-fm-clear]')) clearFilters();
         });
 
         root.addEventListener('change', function (event) {
@@ -586,6 +588,23 @@
                 maximumAge: 300000,
                 timeout: 10000
             });
+        }
+
+        function clearFilters() {
+            state.filters.estado = '';
+            state.filters.cidade = '';
+            state.filters.categoria = '';
+            state.filters.lat = '';
+            state.filters.lng = '';
+            state.filters.raio = 30;
+
+            if (el.raio) {
+                el.raio.value = '30';
+            }
+
+            setupFilters();
+            setStatus('Filtros removidos.');
+            loadEventos();
         }
 
         renderCalendar();

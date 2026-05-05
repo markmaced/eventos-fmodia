@@ -53,6 +53,13 @@ $fm_eventos_today = current_time('Y-m-d');
                 <output data-fm-raio-label>30 km</output>
             </label>
         </div>
+        <div class="fm-eventos__filter-actions">
+            <button type="button" data-fm-clear>Limpar filtros</button>
+        </div>
+    </div>
+
+    <div class="fm-eventos__summarybar">
+        <p class="fm-eventos__status" data-fm-status>Carregando eventos...</p>
     </div>
 
     <div class="fm-eventos__calendar" data-fm-calendar>
@@ -78,7 +85,6 @@ $fm_eventos_today = current_time('Y-m-d');
             <?php endfor; ?>
         </div>
     </div>
-    <p class="fm-eventos__status" data-fm-status></p>
 
     <div class="fm-eventos-modal" data-fm-modal hidden>
         <div class="fm-eventos-modal__backdrop" data-fm-close></div>
