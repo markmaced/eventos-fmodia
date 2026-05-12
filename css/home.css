@@ -1,0 +1,378 @@
+/* ============================================
+   FM O Dia — Widget de Eventos para a Home
+   Casa com o tema fmodia-2023:
+   - Fonte Antenna (com fallback)
+   - Vermelho da marca #d20143
+   - Padrao de section-title com linha + tag uppercase
+   ============================================ */
+
+.fme-home {
+    --fme-red: #d20143;
+    --fme-red-dark: #c81341;
+    --fme-yellow: #facf1c;
+    --fme-blue: #007cc2;
+    --fme-ink: #3f3f3f;
+    --fme-ink-2: #565656;
+    --fme-muted: #727272;
+    --fme-line: #e5e5e5;
+    --fme-bg: #fefefe;
+    margin: 30px 0;
+    color: var(--fme-ink-2);
+    font-family: 'antenna-cond-regular', 'antenna-regular', "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.fme-home *,
+.fme-home *::before,
+.fme-home *::after { box-sizing: border-box; }
+
+/* ===== Section title — pattern title_session_slim do tema ===== */
+.fme-home__title {
+    position: relative;
+    margin: 10px 0 25px;
+    padding: 0;
+    line-height: 20px;
+    font-size: 0;
+}
+
+.fme-home__title::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 10px;
+    height: 1px;
+    background: var(--fme-red);
+    z-index: 1;
+}
+
+.fme-home__title-text {
+    position: relative;
+    z-index: 2;
+    display: inline-block;
+    padding-right: 14px;
+    background: var(--fme-bg);
+    color: var(--fme-ink);
+    font-family: 'antenna-cond-bold', 'antenna-bold', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 20px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    vertical-align: middle;
+}
+
+.fme-home__title-tag {
+    position: relative;
+    z-index: 2;
+    float: right;
+    margin-top: 1px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    background: var(--fme-red);
+    color: #fff;
+    font-family: 'antenna-cond-bold', 'antenna-bold', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    line-height: 18px;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: background 0.15s ease;
+}
+
+.fme-home__title-tag:hover {
+    background: var(--fme-red-dark);
+    color: #fff;
+    text-decoration: none;
+}
+
+/* ===== Grid ===== */
+.fme-home__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+}
+
+/* ===== Card ===== */
+.fme-home-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    background: #fff;
+    border: 1px solid var(--fme-line);
+    border-radius: 4px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.fme-home-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--fme-red);
+    box-shadow: 0 12px 24px rgba(210, 1, 67, 0.12), 0 4px 8px rgba(0, 0, 0, 0.04);
+    text-decoration: none;
+    color: inherit;
+}
+
+.fme-home-card:focus-visible {
+    outline: 2px solid var(--fme-red);
+    outline-offset: 2px;
+}
+
+/* Media */
+.fme-home-card__media {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: var(--fme-line);
+}
+
+.fme-home-card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+
+.fme-home-card:hover .fme-home-card__media img {
+    transform: scale(1.06);
+}
+
+.fme-home-card__media-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--ev-color, var(--fme-red)) 0%, color-mix(in srgb, var(--ev-color, var(--fme-red)) 70%, #000) 100%);
+    color: #fff;
+    font-family: 'antenna-cond-bold', 'antenna-bold', sans-serif;
+    font-size: 64px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.04em;
+}
+
+/* Date badge — sobreposto na media */
+.fme-home-card__date {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    min-height: 54px;
+    padding: 4px 0;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.fme-home-card__date::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: var(--ev-color, var(--fme-red));
+}
+
+.fme-home-card__date-day {
+    color: var(--fme-ink);
+    font-family: 'antenna-cond-bold', 'antenna-bold', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-top: 4px;
+}
+
+.fme-home-card__date-mon {
+    margin-top: 2px;
+    color: var(--fme-muted);
+    font-family: 'antenna-cond-bold', 'antenna-bold', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+}
+
+/* Live/status pill no canto direito */
+.fme-home-card__live {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--fme-red);
+    color: #fff;
+    font-family: 'antenna-cond-bold', 'antenna-bold', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+.fme-home-card__live::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #fff;
+    animation: fme-home-pulse 1.6s ease-in-out infinite;
+}
+
+.fme-home-card__live--warn { background: #b76e00; }
+.fme-home-card__live--off { background: #525252; }
+.fme-home-card__live--warn::before,
+.fme-home-card__live--off::before { animation: none; }
+
+@keyframes fme-home-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+/* Body */
+.fme-home-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 14px 16px;
+}
+
+.fme-home-card__cat {
+    display: inline-block;
+    width: fit-content;
+    padding: 2px 8px;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--ev-color, var(--fme-red)) 12%, transparent);
+    color: var(--ev-color, var(--fme-red));
+    font-family: 'antenna-cond-bold', 'antenna-bold', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    line-height: 1.3;
+    text-transform: uppercase;
+}
+
+.fme-home-card__title {
+    margin: 0;
+    color: var(--fme-ink);
+    font-family: 'antenna-cond-bold', 'antenna-bold', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.fme-home-card:hover .fme-home-card__title { color: var(--fme-red); }
+
+.fme-home-card__meta {
+    margin: 4px 0 0;
+    color: var(--fme-muted);
+    font-family: 'antenna-cond-regular', 'antenna-regular', sans-serif;
+    font-size: 13px;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.fme-home-card__weekday {
+    color: var(--fme-ink);
+    font-family: 'antenna-cond-bold', 'antenna-bold', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.fme-home-card__weekday::after { content: " · "; color: var(--fme-line); font-weight: 400; }
+
+.fme-home-card__time {
+    color: var(--fme-ink);
+    font-family: 'antenna-cond-bold', 'antenna-bold', sans-serif;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.fme-home-card__time::after { content: " · "; color: var(--fme-line); font-weight: 400; }
+
+.fme-home-card__location { color: var(--fme-muted); }
+
+/* ===== Footer link ===== */
+.fme-home__footer {
+    margin-top: 22px;
+    text-align: center;
+}
+
+.fme-home__more {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid var(--fme-red);
+    border-radius: 999px;
+    color: var(--fme-red);
+    font-family: 'antenna-cond-bold', 'antenna-bold', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    line-height: 1;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.fme-home__more svg { transition: transform 0.2s ease; }
+
+.fme-home__more:hover {
+    background: var(--fme-red);
+    color: #fff;
+    text-decoration: none;
+}
+
+.fme-home__more:hover svg { transform: translateX(2px); }
+
+/* ===== Responsivo ===== */
+@media (max-width: 1024px) {
+    .fme-home__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 768px) {
+    .fme-home__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .fme-home__title-text { font-size: 18px; }
+    .fme-home-card__title { font-size: 16px; }
+}
+
+@media (max-width: 480px) {
+    .fme-home__grid { grid-template-columns: 1fr; gap: 12px; }
+    .fme-home-card { flex-direction: row; }
+    .fme-home-card__media { flex: 0 0 130px; aspect-ratio: 1 / 1; }
+    .fme-home-card__media-fallback { font-size: 42px; }
+    .fme-home-card__date { width: 40px; min-height: 46px; top: 6px; left: 6px; }
+    .fme-home-card__date-day { font-size: 18px; }
+    .fme-home-card__date-mon { font-size: 9px; }
+    .fme-home-card__body { padding: 10px 12px; min-width: 0; }
+    .fme-home-card__title { font-size: 15px; }
+    .fme-home-card__meta { font-size: 12px; }
+    .fme-home-card__live { padding: 2px 7px; font-size: 9px; }
+}

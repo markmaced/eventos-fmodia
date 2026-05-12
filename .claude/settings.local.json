@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /B \"c:\\\\laragon\\\\www\\\\eventos-fmodia\\\\wp-content\\\\plugins\\\\FmodiaEventosWP\")",
+      "WebFetch(domain:fmodia.com.br)",
+      "Bash(curl -s -L -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\" \"https://fmodia.com.br/\")",
+      "Bash(curl -s -L -A \"Mozilla/5.0\" \"https://fmodia.com.br/\")",
+      "Bash(curl -s -L -A \"Mozilla/5.0\" \"https://www.fmodia.com.br/wp-content/themes/fmodia-2023/style.css?v=4\" -o /tmp/fmodia-theme.css)"
+    ]
+  }
+}

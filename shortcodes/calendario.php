@@ -11,85 +11,83 @@ if (!$fm_eventos_month_timestamp) {
     $fm_eventos_month_timestamp = current_time('timestamp');
 }
 $fm_eventos_month_label = date_i18n('F \d\e Y', $fm_eventos_month_timestamp);
-$fm_eventos_first_weekday = (int) date('w', $fm_eventos_month_timestamp);
-$fm_eventos_grid_start = strtotime('-' . $fm_eventos_first_weekday . ' days', $fm_eventos_month_timestamp);
-$fm_eventos_today = current_time('Y-m-d');
 ?>
 
-<section class="fm-eventos" data-fm-eventos>
-    <header class="fm-eventos__header">
-        <div class="fm-eventos__brand">
-            <span class="fm-eventos__icon" aria-hidden="true"><?php echo esc_html(date_i18n('j', current_time('timestamp'))); ?></span>
-            <div>
-                <p class="fm-eventos__eyebrow">Agenda FM O Dia</p>
-                <h2 data-fm-month-label><?php echo esc_html($fm_eventos_month_label); ?></h2>
-            </div>
+<section class="fme" data-fm-eventos>
+    <header class="fme__hero">
+        <div class="fme__hero-text">
+            <p class="fme__eyebrow">FM O Dia &middot; Agenda</p>
+            <h1 class="fme__heading">Eventos</h1>
+            <p class="fme__subheading">Os melhores shows, festas e experiencias selecionados para voce.</p>
         </div>
-        <div class="fm-eventos__nav" aria-label="Navegacao do calendario">
-            <button type="button" data-fm-today>Hoje</button>
-            <button type="button" data-fm-prev aria-label="Mes anterior"><span aria-hidden="true">&lsaquo;</span></button>
-            <button type="button" data-fm-next aria-label="Proximo mes"><span aria-hidden="true">&rsaquo;</span></button>
+        <div class="fme__monthnav">
+            <button type="button" class="fme__icon-btn" data-fm-prev aria-label="Mes anterior">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M15.4 7.4 14 6l-6 6 6 6 1.4-1.4L10.8 12z"/></svg>
+            </button>
+            <h2 class="fme__monthtitle" data-fm-month-label><?php echo esc_html($fm_eventos_month_label); ?></h2>
+            <button type="button" class="fme__icon-btn" data-fm-next aria-label="Proximo mes">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M8.6 7.4 10 6l6 6-6 6-1.4-1.4L13.2 12z"/></svg>
+            </button>
+            <button type="button" class="fme__today-btn" data-fm-today>Hoje</button>
         </div>
     </header>
 
-    <div class="fm-eventos__filters" role="search" aria-label="Filtros de eventos">
-        <label>
-            <span>Estado</span>
-            <select data-fm-estado></select>
-        </label>
-        <label>
-            <span>Cidade</span>
-            <select data-fm-cidade></select>
-        </label>
-        <label>
-            <span>Categoria</span>
-            <select data-fm-categoria></select>
-        </label>
-        <div class="fm-eventos__geo">
-            <button type="button" data-fm-geo>Minha localizacao</button>
-            <label>
-                <span>Raio</span>
-                <input type="range" min="5" max="200" step="5" value="30" data-fm-raio>
+    <div class="fme__toolbar">
+        <div class="fme__viewswitch" role="tablist" aria-label="Modo de visualizacao">
+            <button type="button" data-fm-view-btn="agenda" class="is-active" role="tab" aria-selected="true">
+                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M3 5h18v2H3zm0 6h18v2H3zm0 6h18v2H3z"/></svg>
+                <span>Agenda</span>
+            </button>
+            <button type="button" data-fm-view-btn="mes" role="tab" aria-selected="false">
+                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M19 4h-1V2h-2v2H8V2H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 16H5V10h14zM5 8V6h14v2z"/></svg>
+                <span>Mes</span>
+            </button>
+        </div>
+
+        <div class="fme__filters" role="search" aria-label="Filtros de eventos">
+            <div class="fme__filter">
+                <svg class="fme__filter-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>
+                <select data-fm-estado aria-label="Estado"></select>
+            </div>
+            <div class="fme__filter">
+                <svg class="fme__filter-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zM9 17H7v-7h2zm4 0h-2V7h2zm4 0h-2v-4h2z"/></svg>
+                <select data-fm-cidade aria-label="Cidade"></select>
+            </div>
+            <div class="fme__filter">
+                <svg class="fme__filter-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 2 4 6v6c0 5 3.5 9.5 8 10 4.5-.5 8-5 8-10V6z"/></svg>
+                <select data-fm-categoria aria-label="Categoria"></select>
+            </div>
+            <button type="button" class="fme__geo-btn" data-fm-geo>
+                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="currentColor"/><path fill="currentColor" d="M12 2v3m0 14v3M2 12h3m14 0h3" stroke="currentColor" stroke-width="2"/></svg>
+                <span data-fm-geo-label>Perto de mim</span>
+            </button>
+            <div class="fme__radius" data-fm-radius hidden>
+                <input type="range" min="5" max="200" step="5" value="30" data-fm-raio aria-label="Raio de busca em km">
                 <output data-fm-raio-label>30 km</output>
-            </label>
-        </div>
-        <div class="fm-eventos__filter-actions">
-            <button type="button" data-fm-clear>Limpar filtros</button>
+            </div>
+            <button type="button" class="fme__clear-btn" data-fm-clear aria-label="Limpar filtros">
+                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M19 6.4 17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12z"/></svg>
+            </button>
         </div>
     </div>
 
-    <div class="fm-eventos__summarybar">
-        <p class="fm-eventos__status" data-fm-status>Carregando eventos...</p>
-    </div>
+    <div class="fme__status" data-fm-status>Carregando eventos&hellip;</div>
 
-    <div class="fm-eventos__calendar" data-fm-calendar>
-        <div class="fm-eventos__weekdays" aria-hidden="true">
+    <div class="fme__view fme__view--agenda" data-fm-agenda></div>
+
+    <div class="fme__view fme__view--mes" data-fm-mes hidden>
+        <div class="fme__weekdays" aria-hidden="true">
             <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sab</span>
         </div>
-        <div class="fm-eventos__grid" data-fm-eventos-grid aria-live="polite" role="grid">
-            <?php for ($fm_eventos_i = 0; $fm_eventos_i < 42; $fm_eventos_i += 1) :
-                $fm_eventos_day_timestamp = strtotime('+' . $fm_eventos_i . ' days', $fm_eventos_grid_start);
-                $fm_eventos_day_key = date('Y-m-d', $fm_eventos_day_timestamp);
-                $fm_eventos_day_classes = ['fm-eventos__day', 'is-empty'];
-                if (date('m', $fm_eventos_day_timestamp) !== date('m', $fm_eventos_month_timestamp)) {
-                    $fm_eventos_day_classes[] = 'is-muted';
-                }
-                if ($fm_eventos_day_key === $fm_eventos_today) {
-                    $fm_eventos_day_classes[] = 'is-today';
-                }
-                ?>
-                <div class="<?php echo esc_attr(implode(' ', $fm_eventos_day_classes)); ?>" role="gridcell" aria-label="<?php echo esc_attr(date_i18n('j \d\e F \d\e Y', $fm_eventos_day_timestamp)); ?>">
-                    <span class="fm-eventos__date"><?php echo esc_html(date_i18n('j', $fm_eventos_day_timestamp)); ?></span>
-                    <div class="fm-eventos__events"></div>
-                </div>
-            <?php endfor; ?>
-        </div>
+        <div class="fme__grid" data-fm-eventos-grid aria-live="polite" role="grid"></div>
     </div>
 
-    <div class="fm-eventos-modal" data-fm-modal hidden>
-        <div class="fm-eventos-modal__backdrop" data-fm-close></div>
-        <article class="fm-eventos-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="fm-eventos-modal-title">
-            <button type="button" class="fm-eventos-modal__close" data-fm-close aria-label="Fechar">&times;</button>
+    <div class="fme-modal" data-fm-modal hidden>
+        <div class="fme-modal__backdrop" data-fm-close></div>
+        <article class="fme-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="fme-modal-title">
+            <button type="button" class="fme-modal__close" data-fm-close aria-label="Fechar">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M19 6.4 17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12z"/></svg>
+            </button>
             <div data-fm-modal-content></div>
         </article>
     </div>

@@ -19,13 +19,50 @@ class FmodiaEventosWPManager
 
         add_action('init', ['FmodiaEventosWPCPT', 'register']);
         add_action('init', ['FmodiaEventosWPShortcode', 'register']);
+        add_action('init', [__CLASS__, 'maybeFlushRewrites'], 99);
         add_action('wp_enqueue_scripts', [__CLASS__, 'registerFrontendAssets']);
         add_action('admin_enqueue_scripts', [__CLASS__, 'registerAdminAssets']);
         add_action('add_meta_boxes', ['FmodiaEventosWPMetaFields', 'register']);
         add_action('save_post_fm_evento', ['FmodiaEventosWPMetaFields', 'save'], 10, 2);
         add_action('rest_api_init', ['FmodiaEventosWPApi', 'registerRoutes']);
+        add_action('template_redirect', [__CLASS__, 'redirectSingleToArchive']);
+        add_filter('template_include', [__CLASS__, 'useArchiveTemplate']);
         FmodiaEventosWPCategoryColor::init();
         FmodiaEventosWPLocationTerm::init();
+    }
+
+    const REWRITE_VERSION = '1.0.0-archive-v1';
+
+    public static function maybeFlushRewrites()
+    {
+        if (get_option('fmodia_eventos_rewrite_version') !== self::REWRITE_VERSION) {
+            flush_rewrite_rules(false);
+            update_option('fmodia_eventos_rewrite_version', self::REWRITE_VERSION);
+        }
+    }
+
+    public static function useArchiveTemplate($template)
+    {
+        if (is_post_type_archive('fm_evento')) {
+            $plugin_template = FMODIAEVENTOSWP_PLUGIN_DIR . 'templates/archive-fm_evento.php';
+            if (file_exists($plugin_template)) {
+                return $plugin_template;
+            }
+        }
+        return $template;
+    }
+
+    public static function redirectSingleToArchive()
+    {
+        if (!is_singular('fm_evento')) {
+            return;
+        }
+        $archive = get_post_type_archive_link('fm_evento');
+        if (!$archive) {
+            return;
+        }
+        wp_safe_redirect(add_query_arg('evento', get_the_ID(), $archive), 302);
+        exit;
     }
 
     private static function loadClasses()
@@ -64,6 +101,7 @@ class FmodiaEventosWPManager
     {
         $css = FMODIAEVENTOSWP_PLUGIN_DIR . 'css/calendario.css';
         $js = FMODIAEVENTOSWP_PLUGIN_DIR . 'js/calendario.js';
+        $homeCss = FMODIAEVENTOSWP_PLUGIN_DIR . 'css/home.css';
 
         wp_register_style(
             'fmodia-eventos-calendario',
@@ -78,6 +116,13 @@ class FmodiaEventosWPManager
             [],
             file_exists($js) ? filemtime($js) : FMODIAEVENTOSWP_VERSION,
             true
+        );
+
+        wp_register_style(
+            'fmodia-eventos-home',
+            FMODIAEVENTOSWP_PLUGIN_URL . 'css/home.css',
+            [],
+            file_exists($homeCss) ? filemtime($homeCss) : FMODIAEVENTOSWP_VERSION
         );
     }
 
