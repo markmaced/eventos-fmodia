@@ -1,0 +1,143 @@
+/* ============================================
+   FM O Dia - Eventos | Pagina de configuracoes (admin)
+   ============================================ */
+
+.fme-settings__intro {
+    max-width: 720px;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.fme-settings__intro code {
+    background: #f0f0f1;
+    padding: 1px 6px;
+    border-radius: 3px;
+}
+
+.fme-settings .title {
+    margin-top: 28px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #dcdcde;
+}
+
+/* ===== Cartoes de selecao (layout / estilo do card) ===== */
+.fme-settings__cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin: 4px 0 2px;
+}
+
+.fme-settings__card {
+    position: relative;
+    cursor: pointer;
+}
+
+.fme-settings__card input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.fme-settings__card-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    width: 132px;
+    height: 96px;
+    padding: 10px;
+    border: 2px solid #dcdcde;
+    border-radius: 8px;
+    background: #fff;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fme-settings__card:hover .fme-settings__card-box {
+    border-color: #8c8f94;
+}
+
+.fme-settings__card input:focus-visible + .fme-settings__card-box {
+    outline: 2px solid #2271b1;
+    outline-offset: 2px;
+}
+
+.fme-settings__card input:checked + .fme-settings__card-box {
+    border-color: #d20143;
+    box-shadow: 0 0 0 1px #d20143;
+}
+
+.fme-settings__card-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+/* Miniaturas ilustrativas dentro de cada cartao */
+.fme-settings__card-box::before {
+    content: "";
+    flex: 1;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    background:
+        linear-gradient(#c3c4c7 0 0) center/100% 100% no-repeat;
+}
+
+.fme-settings__card-box[data-fme-preview="layout-grade"]::before {
+    background:
+        linear-gradient(#c3c4c7 0 0) 0 0/47% 47% no-repeat,
+        linear-gradient(#c3c4c7 0 0) 100% 0/47% 47% no-repeat,
+        linear-gradient(#c3c4c7 0 0) 0 100%/47% 47% no-repeat,
+        linear-gradient(#c3c4c7 0 0) 100% 100%/47% 47% no-repeat;
+}
+
+.fme-settings__card-box[data-fme-preview="layout-lista"]::before {
+    background:
+        linear-gradient(#c3c4c7 0 0) 0 0/100% 30% no-repeat,
+        linear-gradient(#c3c4c7 0 0) 0 50%/100% 30% no-repeat,
+        linear-gradient(#c3c4c7 0 0) 0 100%/100% 30% no-repeat;
+}
+
+.fme-settings__card-box[data-fme-preview="layout-carrossel"]::before {
+    background:
+        linear-gradient(#c3c4c7 0 0) 0 50%/30% 80% no-repeat,
+        linear-gradient(#c3c4c7 0 0) 50% 50%/30% 80% no-repeat,
+        linear-gradient(#dcdcde 0 0) 100% 50%/30% 80% no-repeat;
+}
+
+.fme-settings__card-box[data-fme-preview="card-padrao"]::before {
+    background:
+        linear-gradient(#c3c4c7 0 0) 0 0/100% 60% no-repeat,
+        linear-gradient(#dcdcde 0 0) 0 100%/100% 32% no-repeat;
+}
+
+.fme-settings__card-box[data-fme-preview="card-compacto"]::before {
+    background:
+        linear-gradient(#c3c4c7 0 0) 0 0/100% 75% no-repeat,
+        linear-gradient(#dcdcde 0 0) 0 100%/100% 18% no-repeat;
+}
+
+.fme-settings__card-box[data-fme-preview="card-horizontal"]::before {
+    background:
+        linear-gradient(#c3c4c7 0 0) 0 50%/45% 100% no-repeat,
+        linear-gradient(#dcdcde 0 0) 100% 50%/48% 70% no-repeat;
+}
+
+/* ===== Checkboxes de filtros ===== */
+.fme-settings__check {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 18px 8px 0;
+}
+
+.fme-settings__filtro-row.is-disabled {
+    opacity: 0.45;
+}
+
+.fme-settings__carousel-row.is-disabled {
+    display: none;
+}
+
+.fme-settings__filtro-row.is-disabled input {
+    pointer-events: none;
+}

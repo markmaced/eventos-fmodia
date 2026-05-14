@@ -16,6 +16,12 @@ class FmodiaEventosWPApi
             'permission_callback' => '__return_true',
         ]);
 
+        register_rest_route(self::NS, '/eventos/proximos', [
+            'methods' => WP_REST_Server::READABLE,
+            'callback' => [__CLASS__, 'getProximos'],
+            'permission_callback' => '__return_true',
+        ]);
+
         register_rest_route(self::NS, '/eventos/(?P<id>\d+)', [
             'methods' => WP_REST_Server::READABLE,
             'callback' => [__CLASS__, 'getEvento'],
@@ -43,23 +49,28 @@ class FmodiaEventosWPApi
 
     public static function getEventos(WP_REST_Request $request)
     {
-        $month = sanitize_text_field($request->get_param('mes')) ?: gmdate('Y-m');
+        $monthParam = $request->get_param('mes');
+        $month = sanitize_text_field(is_scalar($monthParam) ? (string) $monthParam : '') ?: gmdate('Y-m');
         if (!preg_match('/^\d{4}-\d{2}$/', $month)) {
             return new WP_Error('mes_invalido', 'Mes invalido. Use YYYY-MM.', ['status' => 400]);
         }
 
         $start = $month . '-01';
         $end = gmdate('Y-m-t', strtotime($start));
-        $estado = strtoupper(sanitize_text_field($request->get_param('estado')));
-        $cidade = sanitize_text_field($request->get_param('cidade'));
-        $categoria = sanitize_title($request->get_param('categoria'));
+        $estadoParam = $request->get_param('estado');
+        $cidadeParam = $request->get_param('cidade');
+        $categoriaParam = $request->get_param('categoria');
+        $estado = strtoupper(sanitize_text_field(is_scalar($estadoParam) ? (string) $estadoParam : ''));
+        $cidade = sanitize_text_field(is_scalar($cidadeParam) ? (string) $cidadeParam : '');
+        $categoria = sanitize_title(is_scalar($categoriaParam) ? (string) $categoriaParam : '');
         $latParam = $request->get_param('lat');
         $lngParam = $request->get_param('lng');
         $hasGeo = is_numeric($latParam) && is_numeric($lngParam);
         $lat = $hasGeo ? floatval($latParam) : null;
         $lng = $hasGeo ? floatval($lngParam) : null;
-        $raio = $request->get_param('raio') !== null && is_numeric($request->get_param('raio'))
-            ? min(500, max(1, floatval($request->get_param('raio'))))
+        $raioParam = $request->get_param('raio');
+        $raio = $raioParam !== null && is_numeric($raioParam)
+            ? min(500, max(1, floatval($raioParam)))
             : 30;
 
         $dateQuery = [
@@ -138,7 +149,7 @@ class FmodiaEventosWPApi
             ]];
         }
 
-        $query = new WP_Query($args);
+        $query = self::runEventQuery($args);
         $events = [];
 
         foreach ($query->posts as $post) {
@@ -158,6 +169,228 @@ class FmodiaEventosWPApi
         $response = rest_ensure_response($events);
         $response->header('Cache-Control', 'max-age=300');
         return $response;
+    }
+
+    /**
+     * Endpoint dos proximos eventos usado pelo widget da home.
+     * Aceita: categoria, estado, cidade, busca, periodo, limit.
+     */
+    public static function getProximos(WP_REST_Request $request)
+    {
+        $events = self::proximosEventos([
+            'categoria' => $request->get_param('categoria'),
+            'estado'    => $request->get_param('estado'),
+            'cidade'    => $request->get_param('cidade'),
+            'busca'     => $request->get_param('busca'),
+            'periodo'   => $request->get_param('periodo'),
+            'ordem'     => $request->get_param('ordem'),
+            'limit'     => $request->get_param('limit'),
+        ]);
+
+        $response = rest_ensure_response($events);
+        $response->header('Cache-Control', 'max-age=120');
+        return $response;
+    }
+
+    /**
+     * Lista de proximos eventos ja formatada, com filtros opcionais.
+     * Reutilizada pelo endpoint REST e pelo shortcode da home.
+     *
+     * @param array $filters categoria, estado, cidade, busca, periodo, limit
+     * @return array
+     */
+    public static function proximosEventos(array $filters = [])
+    {
+        $today = current_time('Y-m-d');
+
+        $categoria = isset($filters['categoria']) && is_scalar($filters['categoria'])
+            ? sanitize_title((string) $filters['categoria']) : '';
+        $estado = isset($filters['estado']) && is_scalar($filters['estado'])
+            ? strtoupper(sanitize_text_field((string) $filters['estado'])) : '';
+        $cidade = isset($filters['cidade']) && is_scalar($filters['cidade'])
+            ? sanitize_text_field((string) $filters['cidade']) : '';
+        $busca = isset($filters['busca']) && is_scalar($filters['busca'])
+            ? sanitize_text_field((string) $filters['busca']) : '';
+        $periodo = isset($filters['periodo']) && is_scalar($filters['periodo'])
+            ? sanitize_key((string) $filters['periodo']) : 'tudo';
+        $ordem = isset($filters['ordem']) && is_scalar($filters['ordem'])
+            ? sanitize_key((string) $filters['ordem']) : 'data';
+        if (!in_array($ordem, ['data', 'destaques', 'promocoes', 'categoria', 'cidade'], true)) {
+            $ordem = 'data';
+        }
+        $limit = isset($filters['limit']) ? intval($filters['limit']) : 4;
+        $limit = max(1, min(48, $limit));
+
+        // Evento ainda nao terminou (data_fim no futuro OU comeca no futuro).
+        $upcoming = [
+            'relation' => 'OR',
+            [
+                'key' => '_fm_evento_data_fim',
+                'value' => $today,
+                'compare' => '>=',
+                'type' => 'DATE',
+            ],
+            [
+                'key' => '_fm_evento_data_inicio',
+                'value' => $today,
+                'compare' => '>=',
+                'type' => 'DATE',
+            ],
+        ];
+
+        $metaQuery = ['relation' => 'AND', $upcoming];
+
+        // Janela de tempo (limita a data de inicio do evento).
+        $range = self::periodoRange($periodo, $today);
+        if ($range['start']) {
+            $metaQuery[] = ['key' => '_fm_evento_data_inicio', 'value' => $range['start'], 'compare' => '>=', 'type' => 'DATE'];
+        }
+        if ($range['end']) {
+            $metaQuery[] = ['key' => '_fm_evento_data_inicio', 'value' => $range['end'], 'compare' => '<=', 'type' => 'DATE'];
+        }
+
+        if ($estado) {
+            $metaQuery[] = ['key' => '_fm_evento_estado', 'value' => $estado, 'compare' => '='];
+        }
+        if ($cidade) {
+            $metaQuery[] = ['key' => '_fm_evento_cidade', 'value' => $cidade, 'compare' => '='];
+        }
+
+        $args = [
+            'post_type' => 'fm_evento',
+            'post_status' => 'publish',
+            'posts_per_page' => $ordem === 'data' ? $limit : 48,
+            'orderby' => 'meta_value',
+            'meta_key' => '_fm_evento_data_inicio',
+            'order' => 'ASC',
+            'meta_query' => $metaQuery,
+        ];
+
+        if ($categoria) {
+            $args['tax_query'] = [[
+                'taxonomy' => 'fm_evento_categoria',
+                'field' => 'slug',
+                'terms' => $categoria,
+            ]];
+        }
+
+        if ($busca) {
+            $args['s'] = $busca;
+        }
+
+        $query = self::runEventQuery($args);
+        $events = [];
+        foreach ($query->posts as $post) {
+            $events[] = self::formatEvent($post, false);
+        }
+        wp_reset_postdata();
+
+        return array_slice(self::sortEvents($events, $ordem), 0, $limit);
+    }
+
+    private static function sortEvents(array $events, $ordem)
+    {
+        if ($ordem === 'data') {
+            return $events;
+        }
+
+        usort($events, function ($a, $b) use ($ordem) {
+            if ($ordem === 'destaques') {
+                $destaque = (int) !empty($b['destaque']) <=> (int) !empty($a['destaque']);
+                if ($destaque !== 0) return $destaque;
+            }
+
+            if ($ordem === 'promocoes') {
+                $promoA = isset($a['promocoes_resumo']['abertas']) ? (int) $a['promocoes_resumo']['abertas'] : 0;
+                $promoB = isset($b['promocoes_resumo']['abertas']) ? (int) $b['promocoes_resumo']['abertas'] : 0;
+                if ($promoA !== $promoB) return $promoB <=> $promoA;
+            }
+
+            if ($ordem === 'categoria') {
+                $catA = isset($a['categoria']['nome']) ? (string) $a['categoria']['nome'] : '';
+                $catB = isset($b['categoria']['nome']) ? (string) $b['categoria']['nome'] : '';
+                $cat = strcasecmp($catA, $catB);
+                if ($cat !== 0) return $cat;
+            }
+
+            if ($ordem === 'cidade') {
+                $city = strcasecmp((string) $a['cidade'], (string) $b['cidade']);
+                if ($city !== 0) return $city;
+            }
+
+            return strcmp((string) $a['data_inicio'], (string) $b['data_inicio']);
+        });
+
+        return $events;
+    }
+
+    /**
+     * Converte um slug de periodo em uma janela start/end (YYYY-MM-DD).
+     */
+    private static function periodoRange($periodo, $today)
+    {
+        $ts = strtotime($today);
+        if (!$ts) {
+            return ['start' => '', 'end' => ''];
+        }
+
+        switch ($periodo) {
+            case 'mes':
+                return ['start' => '', 'end' => gmdate('Y-m-t', $ts)];
+            case 'prox-mes':
+                // "first day of next month" evita o salto de mes do "+1 month".
+                $firstTs = strtotime('first day of next month', $ts);
+                $first = gmdate('Y-m-01', $firstTs);
+                return ['start' => $first, 'end' => gmdate('Y-m-t', $firstTs)];
+            case '30d':
+                return ['start' => '', 'end' => gmdate('Y-m-d', strtotime('+30 days', $ts))];
+            case '90d':
+                return ['start' => '', 'end' => gmdate('Y-m-d', strtotime('+90 days', $ts))];
+            case 'tudo':
+            default:
+                return ['start' => '', 'end' => ''];
+        }
+    }
+
+    /**
+     * Executa um WP_Query de eventos imune a hooks globais que sobrescrevem
+     * o meta_query.
+     *
+     * O tema fmodia-2023 engancha `pre_get_posts` (extra_fields_post_highlight_type)
+     * em TODA consulta de front-end e descarta o meta_query, alem de injetar
+     * filtros posts_join/where/orderby. Isso quebra os filtros de data, estado
+     * e cidade dos eventos. Aqui desligamos esses hooks apenas durante a nossa
+     * consulta e os restauramos logo em seguida, sem afetar o resto da pagina.
+     */
+    private static function runEventQuery(array $args)
+    {
+        $hijackHooks = [
+            ['pre_get_posts', 'extra_fields_post_highlight_type'],
+            ['posts_join', 'extra_fields_post_highlight_type_join'],
+            ['posts_where', 'extra_fields_post_highlight_type_where'],
+            ['posts_orderby', 'extra_fields_post_highlight_type_orderby'],
+            ['posts_groupby', 'extra_fields_post_highlight_type_groupby'],
+        ];
+
+        $restore = [];
+        foreach ($hijackHooks as $hook) {
+            list($tag, $callback) = $hook;
+            $priority = has_filter($tag, $callback);
+            if ($priority !== false) {
+                remove_filter($tag, $callback, $priority);
+                $restore[] = [$tag, $callback, $priority];
+            }
+        }
+
+        try {
+            $query = new WP_Query($args);
+        } finally {
+            foreach ($restore as $hook) {
+                add_filter($hook[0], $hook[1], $hook[2]);
+            }
+        }
+
+        return $query;
     }
 
     public static function getFiltros()
@@ -283,12 +516,14 @@ class FmodiaEventosWPApi
             'cidade' => $meta['cidade'],
             'estado' => $meta['estado'],
             'status' => $meta['status'] ?: 'confirmado',
+            'destaque' => !empty($meta['destaque']),
             'categoria' => $term ? ['nome' => $term->name, 'slug' => $term->slug, 'cor' => $color] : null,
             'cor' => $color,
             'thumbnail' => get_the_post_thumbnail_url($post, 'large') ?: '',
             'lat' => $meta['lat'],
             'lng' => $meta['lng'],
             'distancia_km' => null,
+            'promocoes_resumo' => self::getEventPromotionSummary($post->ID),
         ];
 
         if ($full) {
@@ -305,10 +540,125 @@ class FmodiaEventosWPApi
                 'classificacao' => $meta['classificacao'] ?: 'livre',
                 'mapa_embed' => $enderecoCompleto ? 'https://www.google.com/maps?q=' . rawurlencode($enderecoCompleto) . '&output=embed' : '',
                 'ics_url' => rest_url(self::NS . '/eventos/' . $post->ID . '/ics'),
+                'promocoes' => self::getEventPromotions($post->ID),
             ];
         }
 
         return $event;
+    }
+
+    private static function getEventPromotions($eventId)
+    {
+        static $cache = [];
+        if (isset($cache[$eventId])) {
+            return $cache[$eventId];
+        }
+
+        $ids = FmodiaEventosWPMetaFields::getPromocoes($eventId);
+        if (!$ids || !post_type_exists('promotion')) {
+            $cache[$eventId] = [];
+            return [];
+        }
+
+        $posts = get_posts([
+            'post_type' => 'promotion',
+            'post_status' => 'publish',
+            'post__in' => $ids,
+            'posts_per_page' => count($ids),
+            'orderby' => 'post__in',
+            'suppress_filters' => true,
+        ]);
+
+        $cache[$eventId] = array_map([__CLASS__, 'formatPromotion'], $posts);
+        return $cache[$eventId];
+    }
+
+    private static function getEventPromotionSummary($eventId)
+    {
+        $promotions = self::getEventPromotions($eventId);
+        $summary = [
+            'total' => count($promotions),
+            'abertas' => 0,
+            'encerradas' => 0,
+            'principal' => null,
+        ];
+
+        foreach ($promotions as $promotion) {
+            if ($promotion['status'] === 'encerrada') {
+                $summary['encerradas']++;
+                continue;
+            }
+
+            $summary['abertas']++;
+            if (!$summary['principal']) {
+                $summary['principal'] = [
+                    'id' => $promotion['id'],
+                    'titulo' => $promotion['titulo'],
+                    'url' => $promotion['url'],
+                    'status' => $promotion['status'],
+                    'status_label' => $promotion['status_label'],
+                ];
+            }
+        }
+
+        return $summary;
+    }
+
+    private static function formatPromotion(WP_Post $post)
+    {
+        $start = (string) get_post_meta($post->ID, 'promotion_user_participation_date_start', true);
+        $end = (string) get_post_meta($post->ID, 'promotion_user_participation_date_end', true);
+        $status = self::promotionStatus($start, $end);
+
+        return [
+            'id' => $post->ID,
+            'titulo' => get_the_title($post),
+            'url' => get_permalink($post),
+            'thumbnail' => get_the_post_thumbnail_url($post, 'medium_large') ?: '',
+            'resumo' => wp_strip_all_tags(get_the_excerpt($post)),
+            'participacao_inicio' => $start,
+            'participacao_fim' => $end,
+            'status' => $status['status'],
+            'status_label' => $status['label'],
+        ];
+    }
+
+    private static function promotionStatus($start, $end)
+    {
+        $now = current_datetime()->getTimestamp();
+        $endTs = self::promotionDateTimestamp($end, true);
+        if ($endTs && $endTs < $now) {
+            return ['status' => 'encerrada', 'label' => 'Encerrada'];
+        }
+
+        $startTs = self::promotionDateTimestamp($start, false);
+        if ($startTs && $startTs > $now) {
+            return ['status' => 'aberta', 'label' => 'Em breve'];
+        }
+
+        return ['status' => 'aberta', 'label' => 'Aberta'];
+    }
+
+    private static function promotionDateTimestamp($value, $endOfDay)
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return 0;
+        }
+
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            $value .= $endOfDay ? ' 23:59:59' : ' 00:00:00';
+        } elseif (preg_match('/^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}$/', $value)) {
+            $value .= $endOfDay ? ':59' : ':00';
+        }
+
+        $date = date_create_immutable_from_format('Y-m-d H:i:s', $value, wp_timezone());
+        if ($date instanceof DateTimeImmutable) {
+            return $date->getTimestamp();
+        }
+
+        $timestamp = strtotime($value);
+        return $timestamp ? $timestamp : 0;
     }
 
     private static function distanceKm($lat1, $lng1, $lat2, $lng2)

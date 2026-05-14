@@ -49,6 +49,10 @@
             <?php endforeach; ?>
         </select>
     </label>
+    <label class="fm-eventos-admin-check-inline">
+        <input type="checkbox" name="fm_evento_destaque" value="1" <?php checked(!empty($meta['destaque'])); ?>>
+        <span>Destaque na home / carrossel</span>
+    </label>
     <label class="fm-eventos-admin-full">
         <span>Lineup</span>
         <textarea name="fm_evento_lineup" rows="5" placeholder="Uma atracao por linha"><?php echo esc_textarea($meta['lineup']); ?></textarea>

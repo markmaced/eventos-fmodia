@@ -10,6 +10,7 @@ class FmodiaEventosWPMetaFields
     {
         add_meta_box('fm-evento-detalhes', 'Detalhes do Evento', [__CLASS__, 'renderDetalhes'], 'fm_evento', 'normal', 'high');
         add_meta_box('fm-evento-localizacao', 'Localizacao', [__CLASS__, 'renderLocalizacao'], 'fm_evento', 'normal', 'default');
+        add_meta_box('fm-evento-promocoes', 'Promocoes do Evento', [__CLASS__, 'renderPromocoes'], 'fm_evento', 'side', 'default');
     }
 
     public static function renderDetalhes($post)
@@ -28,6 +29,13 @@ class FmodiaEventosWPMetaFields
         $locais = FmodiaEventosWPLocationTerm::getOptions();
         $selectedLocal = self::getSelectedLocal($post->ID);
         require FMODIAEVENTOSWP_PLUGIN_DIR . 'admin/meta-box-localizacao.php';
+    }
+
+    public static function renderPromocoes($post)
+    {
+        $selectedPromocoes = self::getPromocoes($post->ID);
+        $promocoes = self::getPromotionOptions($selectedPromocoes);
+        require FMODIAEVENTOSWP_PLUGIN_DIR . 'admin/meta-box-promocoes.php';
     }
 
     public static function save($postId, $post)
@@ -63,6 +71,8 @@ class FmodiaEventosWPMetaFields
             self::updateMeta($postId, $field, $value === '' ? '' : (string) floatval($value));
         }
 
+        self::updateMeta($postId, 'destaque', empty($_POST['fm_evento_destaque']) ? '' : '1');
+
         $localId = isset($_POST['fm_evento_local_id']) ? absint($_POST['fm_evento_local_id']) : 0;
         if ($localId) {
             wp_set_object_terms($postId, [$localId], 'fm_evento_local', false);
@@ -81,6 +91,8 @@ class FmodiaEventosWPMetaFields
             $classificacao = 'livre';
         }
         self::updateMeta($postId, 'classificacao', $classificacao);
+
+        self::savePromocoes($postId);
     }
 
     public static function getMeta($postId)
@@ -88,7 +100,7 @@ class FmodiaEventosWPMetaFields
         $fields = [
             'data_inicio', 'data_fim', 'hora_inicio', 'hora_fim', 'local_nome', 'endereco',
             'cidade', 'estado', 'cep', 'lat', 'lng', 'link_ingresso', 'data_inicio_venda',
-            'preco_min', 'preco_max', 'lineup', 'classificacao', 'status',
+            'preco_min', 'preco_max', 'lineup', 'classificacao', 'status', 'destaque',
         ];
 
         $meta = [];
@@ -100,6 +112,16 @@ class FmodiaEventosWPMetaFields
         $meta['classificacao'] = $meta['classificacao'] ?: 'livre';
 
         return $meta;
+    }
+
+    public static function getPromocoes($postId)
+    {
+        $ids = get_post_meta($postId, '_fm_evento_promocoes', true);
+        if (!is_array($ids)) {
+            $ids = $ids ? [$ids] : [];
+        }
+
+        return array_values(array_unique(array_filter(array_map('absint', $ids))));
     }
 
     private static function getSelectedLocal($postId)
@@ -120,5 +142,61 @@ class FmodiaEventosWPMetaFields
         }
 
         update_post_meta($postId, '_fm_evento_' . $field, $value);
+    }
+
+    private static function savePromocoes($postId)
+    {
+        $raw = isset($_POST['fm_evento_promocoes']) && is_array($_POST['fm_evento_promocoes'])
+            ? wp_unslash($_POST['fm_evento_promocoes'])
+            : [];
+
+        $ids = [];
+        foreach ($raw as $value) {
+            $id = absint($value);
+            if (!$id || get_post_type($id) !== 'promotion') {
+                continue;
+            }
+            $ids[] = $id;
+        }
+
+        $ids = array_values(array_unique($ids));
+        if (!$ids) {
+            delete_post_meta($postId, '_fm_evento_promocoes');
+            return;
+        }
+
+        update_post_meta($postId, '_fm_evento_promocoes', $ids);
+    }
+
+    private static function getPromotionOptions(array $selectedIds = [])
+    {
+        if (!post_type_exists('promotion')) {
+            return [];
+        }
+
+        $posts = get_posts([
+            'post_type' => 'promotion',
+            'post_status' => ['publish', 'future', 'draft', 'pending', 'private'],
+            'posts_per_page' => 200,
+            'orderby' => 'date',
+            'order' => 'DESC',
+            'suppress_filters' => true,
+        ]);
+
+        $byId = [];
+        foreach ($posts as $post) {
+            $byId[$post->ID] = $post;
+        }
+
+        foreach ($selectedIds as $id) {
+            if (!isset($byId[$id])) {
+                $post = get_post($id);
+                if ($post && $post->post_type === 'promotion') {
+                    $byId[$post->ID] = $post;
+                }
+            }
+        }
+
+        return array_values($byId);
     }
 }

@@ -3,7 +3,7 @@
  * Plugin Name: FM O Dia - Eventos
  * Description: Area de eventos da FM O Dia com calendario mensal, filtros, modal de detalhes e arquivos iCal.
  * Version: 1.0.0
- * Author: FM O Dia
+ * Author: Marcos Macedo
  * Text Domain: fmodia-eventos
  */
 

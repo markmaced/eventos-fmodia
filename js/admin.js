@@ -132,7 +132,23 @@
         });
     }
 
+    function filterPromotions(input) {
+        var query = input.value.trim().toLowerCase();
+        var root = input.closest('.inside') || document;
+        var items = root.querySelectorAll('[data-fm-promotion-item]');
+
+        Array.prototype.forEach.call(items, function (item) {
+            var haystack = item.getAttribute('data-search') || item.textContent.toLowerCase();
+            item.hidden = query && haystack.indexOf(query) === -1;
+        });
+    }
+
     document.addEventListener('input', validateDates);
+    document.addEventListener('input', function (event) {
+        if (event.target.matches('[data-fm-promotion-search]')) {
+            filterPromotions(event.target);
+        }
+    });
     document.addEventListener('change', function (event) {
         validateDates();
         if (event.target.matches('[data-fm-cep]')) {

@@ -27,6 +27,61 @@
     color: #646970;
 }
 
+.fm-eventos-admin-check-inline {
+    flex-direction: row !important;
+    align-items: center;
+}
+
+.fm-eventos-admin-check-inline input {
+    width: auto;
+}
+
+.fm-eventos-admin-note,
+.fm-eventos-admin-empty {
+    margin: 0 0 10px;
+    color: #646970;
+}
+
+.fm-eventos-admin-search {
+    width: 100%;
+    margin: 0 0 10px;
+}
+
+.fm-eventos-admin-checklist {
+    display: grid;
+    gap: 8px;
+    max-height: 280px;
+    overflow: auto;
+    padding-right: 2px;
+}
+
+.fm-eventos-admin-checkitem {
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr);
+    gap: 8px;
+    align-items: flex-start;
+    padding: 8px;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.fm-eventos-admin-checkitem input {
+    margin: 2px 0 0;
+}
+
+.fm-eventos-admin-checkitem span {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+    font-weight: 600;
+}
+
+.fm-eventos-admin-checkitem small {
+    color: #646970;
+    font-weight: 400;
+}
+
 @media (max-width: 782px) {
     .fm-eventos-admin-grid {
         grid-template-columns: 1fr;
