@@ -186,7 +186,7 @@ class FmodiaEventosWPShortcode
         $monthShort = isset($months[$monthIdx]) ? $months[$monthIdx] : '';
         $weekdayShort = isset($weekdays[$weekdayIdx]) ? $weekdays[$weekdayIdx] : '';
 
-        $location = trim(implode(' · ', array_filter([
+        $location = trim(implode(' Â· ', array_filter([
             $ev['local_nome'],
             ($ev['cidade'] && $ev['estado']) ? $ev['cidade'] . ', ' . $ev['estado'] : ($ev['cidade'] ?: $ev['estado']),
         ])));

@@ -450,7 +450,7 @@
                 var key = ev.data_inicio;
                 var d = dateFromKey(key);
                 if (d && (d.getMonth() !== month || d.getFullYear() !== year)) {
-                    // evento comecou antes do mes mas se estende para dentro — usa primeiro dia do mes
+                    // evento comecou antes do mes mas se estende para dentro â€” usa primeiro dia do mes
                     var first = new Date(year, month, 1);
                     if (ev.data_fim && ev.data_fim >= dateKey(first)) {
                         key = dateKey(first);
@@ -476,7 +476,7 @@
                     (isToday ? ' is-today' : '') +
                     (isPast ? ' is-past' : '');
 
-                // Pilula de data — funciona como o "no" da timeline.
+                // Pilula de data â€” funciona como o "no" da timeline.
                 var dayPill = document.createElement('div');
                 dayPill.className = 'fme-agenda__daypill' + (isToday ? ' is-today' : '');
                 dayPill.innerHTML =
@@ -635,7 +635,7 @@
         function injectMonthSkeletons() {
             if (!el.grid) return;
             var cells = el.grid.children;
-            // Spalha pílulas-skeleton em algumas células pra dar sensação de "evento chegando"
+            // Spalha pÃ­lulas-skeleton em algumas cÃ©lulas pra dar sensaÃ§Ã£o de "evento chegando"
             var positions = [4, 9, 16, 22, 27, 33];
             positions.forEach(function (i) {
                 var cell = cells[i];

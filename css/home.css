@@ -1,5 +1,5 @@
 /* ============================================
-   FM O Dia — Widget de Eventos para a Home
+   FM O Dia â€” Widget de Eventos para a Home
    Casa com o tema fmodia-2023:
    - Fonte Antenna (com fallback)
    - Vermelho da marca #d20143
@@ -25,7 +25,7 @@
 .fme-home *::before,
 .fme-home *::after { box-sizing: border-box; }
 
-/* ===== Section title — pattern title_session_slim do tema ===== */
+/* ===== Section title â€” pattern title_session_slim do tema ===== */
 .fme-home__title {
     position: relative;
     margin: 10px 0 25px;
@@ -155,7 +155,7 @@
     letter-spacing: -0.04em;
 }
 
-/* Date badge — sobreposto na media */
+/* Date badge â€” sobreposto na media */
 .fme-home-card__date {
     position: absolute;
     top: 10px;
@@ -318,7 +318,7 @@
     letter-spacing: 0.3px;
 }
 
-.fme-home-card__weekday::after { content: " · "; color: var(--fme-line); font-weight: 400; }
+.fme-home-card__weekday::after { content: " Â· "; color: var(--fme-line); font-weight: 400; }
 
 .fme-home-card__time {
     color: var(--fme-ink);
@@ -327,7 +327,7 @@
     font-variant-numeric: tabular-nums;
 }
 
-.fme-home-card__time::after { content: " · "; color: var(--fme-line); font-weight: 400; }
+.fme-home-card__time::after { content: " Â· "; color: var(--fme-line); font-weight: 400; }
 
 .fme-home-card__location { color: var(--fme-muted); }
 

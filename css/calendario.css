@@ -1,5 +1,5 @@
 /* ============================================
-   FM O Dia — Agenda de Eventos
+   FM O Dia â€” Agenda de Eventos
    Design moderno: Linear/Vercel/Resy
    ============================================ */
 
@@ -449,7 +449,7 @@
     pointer-events: none;
 }
 
-/* day pill (header da agenda) — skeleton apaga conteudo interno */
+/* day pill (header da agenda) â€” skeleton apaga conteudo interno */
 .fme-agenda__daypill.fme-skel {
     background: linear-gradient(
         90deg,
@@ -497,7 +497,7 @@
     min-height: 200px;
 }
 
-/* timeline — linha do tempo vertical */
+/* timeline â€” linha do tempo vertical */
 .fme-agenda {
     position: relative;
 }
@@ -533,7 +533,7 @@
     margin-bottom: 12px;
 }
 
-/* pilula de data — o "no" da timeline, sobreposto a linha */
+/* pilula de data â€” o "no" da timeline, sobreposto a linha */
 .fme-agenda__daypill {
     position: absolute;
     left: 0;
@@ -579,7 +579,7 @@
 /* dia de hoje em destaque */
 .fme-agenda__group.is-today .fme-agenda__weekday { color: var(--c-brand); }
 
-/* dias que ja passaram — linha tracejada e pilula apagada */
+/* dias que ja passaram â€” linha tracejada e pilula apagada */
 .fme-agenda__group.is-past::before {
     background: repeating-linear-gradient(
         var(--c-border) 0 4px,
