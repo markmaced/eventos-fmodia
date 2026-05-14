@@ -99,7 +99,7 @@
             if (ev.local_nome) localParts.push(ev.local_nome);
             if (ev.cidade && ev.estado) localParts.push(ev.cidade + ', ' + ev.estado);
             else if (ev.cidade || ev.estado) localParts.push(ev.cidade || ev.estado);
-            var location = localParts.join(' · ');
+            var location = localParts.join(' - ');
 
             var hora = ev.hora_inicio ? String(ev.hora_inicio).slice(0, 5) : '';
             var color = ev.cor || '#d20143';

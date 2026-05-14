@@ -635,7 +635,7 @@
         function injectMonthSkeletons() {
             if (!el.grid) return;
             var cells = el.grid.children;
-            // Spalha pÃ­lulas-skeleton em algumas cÃ©lulas pra dar sensaÃ§Ã£o de "evento chegando"
+            // Spalha skeletons em algumas celulas para sugerir carregamento.
             var positions = [4, 9, 16, 22, 27, 33];
             positions.forEach(function (i) {
                 var cell = cells[i];

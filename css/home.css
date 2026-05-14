@@ -318,7 +318,7 @@
     letter-spacing: 0.3px;
 }
 
-.fme-home-card__weekday::after { content: " Â· "; color: var(--fme-line); font-weight: 400; }
+.fme-home-card__weekday::after { content: " - "; color: var(--fme-line); font-weight: 400; }
 
 .fme-home-card__time {
     color: var(--fme-ink);
@@ -327,7 +327,7 @@
     font-variant-numeric: tabular-nums;
 }
 
-.fme-home-card__time::after { content: " Â· "; color: var(--fme-line); font-weight: 400; }
+.fme-home-card__time::after { content: " - "; color: var(--fme-line); font-weight: 400; }
 
 .fme-home-card__location { color: var(--fme-muted); }
 
